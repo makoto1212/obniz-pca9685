@@ -1,0 +1,41 @@
+<!-- HTML Example -->
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1" charset="utf-8">
+  <script src="https://obniz.io/js/jquery-3.2.1.min.js"></script>
+  <script src="https://unpkg.com/obniz@1.11.2/obniz.js"></script>
+  <script src="../PCA9685.js"></script>
+</head>
+<body>
+
+<div id="obniz-debug"></div>
+
+<script>
+var obniz = new Obniz("OBNIZ_ID_HERE");
+obniz.onconnect = async function () {
+
+	obniz.io0.output(false); //gnd
+	obniz.io3.output(true); //vcc
+	await obniz.wait(5);
+
+	var i2c = obniz.getFreeI2C(); 
+	i2c.start({mode:"master", sda:1, scl:2, clock:100000, pull:"5v"});
+
+	var pca9685 = new PCA9685(i2c);
+	await pca9685.init(i2c);
+	await pca9685.set_pwm_freq(i2c, 60); //hz
+
+	pca9685.set_pwm(i2c, 0, 0, 375);
+	pca9685.set_pwm(i2c, 2, 0, 375);
+	await obniz.wait(1000);
+
+	pca9685.set_pwm(i2c, 0, 0, 600);
+	pca9685.set_pwm(i2c, 2, 0, 600);
+
+	i2c.end();
+	obniz.io0.end();
+	obniz.io3.end();
+}
+</script>
+</body>
+</html>
